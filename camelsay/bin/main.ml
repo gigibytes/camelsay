@@ -1,11 +1,22 @@
 open Core
 
-(* let camel_body =
-  {|
-  |}
-in *)
+(* TODO add flag for different camel styles *)
+
 let camel_speech ?(message = "*spits*") () =
-  print_endline message
+  let camel_body =
+    {|
+      //
+  _oo\
+  (__/ \  _  _
+    \  \/ \/ \
+    (         )\
+      \_______/  \
+      [[] [[]
+      [[] [[]
+    |}
+  in
+  let full_text = (Printf.sprintf "\n< %s >\n" message) ^ camel_body in
+  print_endline full_text 
 
 let message_param =
   (* makes sense for this to be anonymous. it's the only flag (for now), and it's the main thing one would pass in *)
