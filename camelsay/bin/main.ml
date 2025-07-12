@@ -25,6 +25,7 @@ let render_output ~message ~body_type =
   in
   let camel_and_speech = (Printf.sprintf "\n< %s >\n" message) ^ (camel_body) in
   print_endline camel_and_speech
+;;
 
 let get_message = 
   function
