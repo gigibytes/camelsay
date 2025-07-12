@@ -57,10 +57,9 @@ let translate ~message ~language =
     | Some l when String.Caseless.equal l "es" -> "es_SP"
     | _ -> "no_op"
   in
-  let maybe_translated_message =
-    if (not (String.equal language_code "no_op")) then (get_translation ~message ~language_code) else message
-  in
-  maybe_translated_message
+  if (not (String.equal language_code "no_op")) then
+    get_translation ~message ~language_code
+  else message
 ;;
 
 let get_message ~message ~lang = 
