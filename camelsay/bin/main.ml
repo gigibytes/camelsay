@@ -43,6 +43,7 @@ let get_translation ~message ~language_code =
 ;;
 
 let translate ~message ~language =
+  (* this entire function seems useless actually, should collapse into/with 'get_translation' *)
   let language_code =
     (* About language codes
     https://en.wikipedia.org/wiki/IETF_language_tag
