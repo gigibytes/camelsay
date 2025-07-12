@@ -1,7 +1,7 @@
 open Core
 
 let render_output ~message ~body_type =
-  (* idk how to get unicode actually rendering so this is here as a regular string for now. doubt this works *)
+  (* TODO idk how to get unicode actually rendering so this is here as a regular string for now. doubt this works *)
   let emoji_camel = "U+1F42B"
   in
   let ascii_camel_body =
@@ -28,13 +28,16 @@ let render_output ~message ~body_type =
 ;;
 
 
+(* this feels a little redundant but I guess I can justify it by saying that the
+  render function is just using these types to decide what to render, instead of having to
+  match directly on the bool? maybe it's a little more intentional/separated? *)
 let get_camel_type emoji_flag = if emoji_flag then `Emoji else `Ascii;;
 
 let get_translation ~message ~language_code = 
 (* this is where we reach out to whatever API i'm using for this, probably Google Translate
 https://cloud.google.com/translate/docs/reference/rpc/google.cloud.translation.v3beta1
 *)
- if (Option.is_some language_code) then
+ if (not (String.equal language_code "no_op")) then
     message ^ "this message has been translated :)"
   else message
 ;;
@@ -87,10 +90,10 @@ let camelsay_command =
     let message = anon (maybe ("message" %: string))
     and
     (* Command.Params can take Command.Flag types in their definitions. https://ocaml.org/p/core/v0.12.3/doc/Core/Command/Param/index.html#val-flag *)
-    emoji = flag "emoji" Command.Flag.no_arg ~doc:"Display an emoji camel instead of the default ascii camel"
+    emoji = flag "emoji" Command.Flag.no_arg ~doc:"Display an emoji camel instead of the default ASCII camel"
     and
     (* Should offer a set of options to start *)
-    translation_target_lang = flag "translate" (optional string) ~doc:"Translate to a different language"
+    translation_target_lang = flag "translate" (optional string) ~doc:"Use Google translate to output a different language"
     in 
     fun () -> render_output ~message:(get_message ~message ~translation_target_lang) ~body_type:(get_camel_type emoji)
    ]
