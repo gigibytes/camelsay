@@ -31,7 +31,9 @@ let render_output ~message ~body_type =
 let get_camel_type emoji_flag = if emoji_flag then `Emoji else `Ascii;;
 
 let get_translation ~message ~language_code = 
-(* this is where we reach out to whatever API i'm using for this *)
+(* this is where we reach out to whatever API i'm using for this, probably Google Translate
+https://cloud.google.com/translate/docs/reference/rpc/google.cloud.translation.v3beta1
+*)
  if (Option.is_some language_code) then
     message ^ "this message has been translated :)"
   else message
@@ -39,14 +41,24 @@ let get_translation ~message ~language_code =
 
 let translate ~message ~language =
   let language_code =
+    (* About language codes
+    https://en.wikipedia.org/wiki/IETF_language_tag
+    https://www.techonthenet.com/js/language_tags.php
+    https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes
+    *)
     (* TODO: support non roman chars and accents with unicode *)
+    (* If we are in this codepath then ~language shouldn't be None. *)
     match language with
     | Some l when String.Caseless.equal l "es" -> "es_SP"
-    | None | _ -> "no_op"
+    | _ -> "no_op"
   in
   let translation_note =
     match language_code with
-    | "no_op" -> "No translation performed, language not recognized"
+    (* If we are in this codepath then ~language shouldn't be None,
+      it would be a string that didn't match any of the options in the list *)
+    (* TODO: relocate validation to the Command definition. Check if string is one of the API supported options.
+      Can probably switch to using a bigass variant to switch on language type *)
+    | "no_op" -> "No translation performed. Language not recognized"
     | lang -> [%string "Translated message to %{lang}"]
   in
   let maybe_translated_message =
@@ -66,17 +78,20 @@ let get_message ~message ~translation_target_lang =
 ;;
 
 let camelsay_command =
+  (* Command.basic lets you build a Command with Param types instead of Spec *)
   Command.basic
   ~summary:"Forces the camel to utter a phrase of your choosing."
   [%map_open.Command
+  (* Command.Param below *)
+    (* this anon function is part of Command.Param *)
     let message = anon (maybe ("message" %: string))
     and
+    (* Command.Params can take Command.Flag types in their definitions. https://ocaml.org/p/core/v0.12.3/doc/Core/Command/Param/index.html#val-flag *)
     emoji = flag "emoji" Command.Flag.no_arg ~doc:"Display an emoji camel instead of the default ascii camel"
     and
     (* Should offer a set of options to start *)
     translation_target_lang = flag "translate" (optional string) ~doc:"Translate to a different language"
     in 
-    (* get_camel_type should return one of the variants that I defined in camel_body *)
     fun () -> render_output ~message:(get_message ~message ~translation_target_lang) ~body_type:(get_camel_type emoji)
    ]
     
