@@ -34,12 +34,12 @@ let render_output ~message ~body_type =
 let get_camel_type emoji_flag = if emoji_flag then `Emoji else `Ascii;;
 
 let get_translation ~message ~language_code = 
-(* this is where we reach out to whatever API i'm using for this, probably Google Translate
-https://cloud.google.com/translate/docs/reference/rpc/google.cloud.translation.v3beta1
-*)
  if (not (String.equal language_code "no_op")) then
-    message ^ "this message has been translated :)"
-  else message
+  (* TODO translate 4real *)
+  (* let api_translation = ... *)
+  (* https://cloud.google.com/translate/docs/reference/rpc/google.cloud.translation.v3beta1 *)
+    message ^ " " ^ [%string "this message has been translated to %{language_code}"]
+  else message ^ "No translation performed. Language not recognized"
 ;;
 
 let translate ~message ~language =
@@ -51,30 +51,23 @@ let translate ~message ~language =
     *)
     (* TODO: support non roman chars and accents with unicode *)
     (* If we are in this codepath then ~language shouldn't be None. *)
+    (* This language validation should probly either happen by checking valid langs against api, or just 
+      matching on api error if we pass a bad lang code *)
     match language with
     | Some l when String.Caseless.equal l "es" -> "es_SP"
     | _ -> "no_op"
   in
-  let translation_note =
-    match language_code with
-    (* If we are in this codepath then ~language shouldn't be None,
-      it would be a string that didn't match any of the options in the list *)
-    (* TODO: relocate validation to the Command definition. Check if string is one of the API supported options.
-      Can probably switch to using a bigass variant to switch on language type *)
-    | "no_op" -> "No translation performed. Language not recognized"
-    | lang -> [%string "Translated message to %{lang}"]
-  in
   let maybe_translated_message =
     if (not (String.equal language_code "no_op")) then (get_translation ~message ~language_code) else message
   in
-  maybe_translated_message ^ translation_note
+  maybe_translated_message
 ;;
 
-let get_message ~message ~translation_target_lang = 
+let get_message ~message ~lang = 
   let default_message = "*spits*"
   in
   match message with
-  | Some m when (Option.is_some translation_target_lang) -> translate ~message:m ~language:translation_target_lang
+  | Some m when (Option.is_some lang) -> translate ~message:m ~language:lang
   (* Don't translate when the translation_target_lang option is None/when guard eq false *)
   | Some m -> m
   | None -> default_message
@@ -93,9 +86,9 @@ let camelsay_command =
     emoji = flag "emoji" Command.Flag.no_arg ~doc:"Display an emoji camel instead of the default ASCII camel"
     and
     (* Should offer a set of options to start *)
-    translation_target_lang = flag "translate" (optional string) ~doc:"Use Google translate to output a different language"
+    lang = flag "lang" (optional string) ~doc:"Use Google translate to output a different language"
     in 
-    fun () -> render_output ~message:(get_message ~message ~translation_target_lang) ~body_type:(get_camel_type emoji)
+    fun () -> render_output ~message:(get_message ~message ~lang) ~body_type:(get_camel_type emoji)
    ]
     
 let () = Command_unix.run ~version:"0.1" camelsay_command
