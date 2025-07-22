@@ -2,7 +2,7 @@ open Core
 
 let render_output ~message ~body_type =
   (* TODO idk how to get unicode actually rendering so this is here as a regular string for now. doubt this works *)
-  let emoji_camel = "U+1F42B"
+  let emoji_camel = Emoji.two_hump_camel
   in
   let ascii_camel_body =
     {|
@@ -84,6 +84,9 @@ let camelsay_command =
     and
     (* Command.Params can take Command.Flag types in their definitions. https://ocaml.org/p/core/v0.12.3/doc/Core/Command/Param/index.html#val-flag *)
     emoji = flag "emoji" Command.Flag.no_arg ~doc:"Display an emoji camel instead of the default ASCII camel"
+    (* TODO: add a loop where it gives you random responses to what you say. *)
+    (* and *)
+    (* conversation = flag "conversation" Command.Flag.no_arg ~doc:"Engage in a dialogue with the camel" *)
     and
     (* Should offer a set of options to start *)
     lang = flag "lang" (optional string) ~doc:"Use Google translate to output a different language"

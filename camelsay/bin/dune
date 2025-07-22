@@ -1,6 +1,6 @@
 (executable
  (public_name camelsay)
  (name main)
- (libraries core core_unix.command_unix)
+ (libraries core core_unix.command_unix emoji)
  (preprocess
   (pps ppx_jane)))
